@@ -5,7 +5,7 @@ import os
 
 
 SCRAP_URL = 'https://www.zatrolene-hry.cz/klub/klub-deskovych-her-doupe-olomouc-58/'
-TMP_FILE_NAME = 'webpage.html'
+TMP_FILE_NAME = 'tmp_webpage.html'
 
 
 def web_page_download(url: str, file_name: str) -> str | None:
@@ -13,6 +13,7 @@ def web_page_download(url: str, file_name: str) -> str | None:
         response = requests.get(url)
         with open(file_name, 'w', encoding='utf-8') as file:
             file.write(response.text)
+            print("HTML downloaded")
         return file_name
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
@@ -51,20 +52,24 @@ def html_scrap_games(html_name: str) -> pd.ExcelFile:
         # Append to list
         games.append([game_name, game_link, commentary])
 
+    print("Scrap done")
     # Create DataFrame (no need for Link column)
-    df = pd.DataFrame(games, columns=['Game Name', 'Link', 'Commentary'])
+    df = pd.DataFrame(games, columns=['Název hry', 'Link', 'Komentář'])
 
     # Save to Excel with clickable hyperlinks for Game Name
-    with pd.ExcelWriter('games_data.xlsx', engine='xlsxwriter') as writer:
-        df[['Game Name', 'Commentary']].to_excel(writer, index=False, sheet_name='Games')
+    with pd.ExcelWriter('Seznam_her.xlsx', engine='xlsxwriter') as writer:
+        df[['Název hry', 'Komentář']].to_excel(writer, index=False, sheet_name='hry')
 
         # Access the XlsxWriter workbook and worksheet objects
         workbook = writer.book
-        worksheet = writer.sheets['Games']
+        worksheet = writer.sheets['hry']
+        print("XLSX created")
 
         # Iterate through DataFrame and add hyperlinks
-        for row_num, (name, link) in enumerate(zip(df['Game Name'], df['Link']), start=1):
+        for row_num, (name, link) in enumerate(zip(df['Název hry'], df['Link']), start=1):
             worksheet.write_url(f'A{row_num + 1}', link, string=name)  # A is for the 'Game Name' column
+    print("URLS mapped")
+    
 
 
 def clean(file_path: str) -> bool:
@@ -84,5 +89,6 @@ def clean(file_path: str) -> bool:
         
 
 if __name__ == "__main__":
-    html_scrap_games(web_page_download(SCRAP_URL, TMP_FILE_NAME))
-    clean(TMP_FILE_NAME)
+    name = web_page_download(SCRAP_URL, TMP_FILE_NAME)
+    html_scrap_games(name)
+    clean(name)
