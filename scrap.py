@@ -23,7 +23,6 @@ def html_scrap_games(html_name: str) -> pd.ExcelFile:
     try:
         with open(html_name, 'r', encoding='utf-8') as file:
             html_content = file.read()
-
     except FileNotFoundError:
         print("The file was not found.")
         return
@@ -65,9 +64,11 @@ def html_scrap_games(html_name: str) -> pd.ExcelFile:
         worksheet = writer.sheets['hry']
         print("XLSX created")
 
+        url_main_page = 'https://www.zatrolene-hry.cz'
+        
         # Iterate through DataFrame and add hyperlinks
         for row_num, (name, link) in enumerate(zip(df['Název hry'], df['Link']), start=1):
-            worksheet.write_url(f'A{row_num + 1}', link, string=name)  # A is for the 'Game Name' column
+            worksheet.write_url(f'A{row_num + 1}', url_main_page + link, string=name)  # A is for the 'Game Name' column
     print("URLS mapped")
     
 
